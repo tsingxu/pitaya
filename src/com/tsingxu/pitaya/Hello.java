@@ -1,0 +1,14 @@
+package com.tsingxu.pitaya;
+
+public class Hello
+{
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args)
+	{
+		System.out.println("Hello world");
+	}
+
+}
