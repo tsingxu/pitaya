@@ -1,5 +1,7 @@
 package com.tsingxu.pitaya;
 
+import org.apache.log4j.Logger;
+
 /**
  * <b>in_a_word_briefly</b>
  * 
@@ -12,14 +14,15 @@ package com.tsingxu.pitaya;
  */
 public class Hello
 {
+	private static final Logger logger = Logger.getLogger(Hello.class);
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args)
 	{
-		System.out
-				.println("Hello pitaya\nintro:\ta framework that aims to provide a high-performance & high-scalability web server, it's a trial.\nauthor:\txuhuiqing(tsingxu)");
-
+		logger.info("hello world");
+//		logger.info("Hello pitaya\nintro:\ta framework that aims to provide a high-performance & high-scalability web server, it's a trial.\nauthor:\txuhuiqing(tsingxu)");
 	}
 
 }
