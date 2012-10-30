@@ -4,7 +4,7 @@ package com.tsingxu.pitaya;
  * <b>in_a_word_briefly</b>
  * 
  * <ol>
- * <li>...</li>
+ * <li>Say Hello</li>
  * </ol>
  * 
  * @since Oct 29, 2012 6:50:59 PM
