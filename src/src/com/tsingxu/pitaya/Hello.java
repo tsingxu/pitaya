@@ -22,12 +22,14 @@ public class Hello
 	public static void main(String[] args)
 	{
 		String ls = System.getProperty("line.separator");
-		logger.info(ls + "---------------------------------------------------------------------"
-				+ ls + "                          Hello pitaya" + ls
+		String message = ls
+				+ "---------------------------------------------------------------------" + ls
+				+ "                          Hello pitaya" + ls
 				+ "    intro: a framework that aims to provide a high-performance" + ls
 				+ "           & high-scalability web server, it's a trial." + ls
 				+ "    author:xuhuiqing (tsingxu)" + ls
-				+ "---------------------------------------------------------------------");
+				+ "---------------------------------------------------------------------";
+		logger.info(message);
+		System.out.println(message.substring(2));
 	}
-
 }
