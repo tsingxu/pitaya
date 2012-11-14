@@ -29,7 +29,7 @@ public class Hello
 				+ "           & high-scalability web server, it's a trial." + ls
 				+ "    author:xuhuiqing (tsingxu)" + ls
 				+ "---------------------------------------------------------------------";
-		logger.info(message);
+		logger.fatal(message);
 		System.out.println(message.substring(2));
 	}
 }
