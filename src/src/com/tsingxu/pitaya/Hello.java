@@ -29,7 +29,8 @@ public class Hello
 				+ "           & high-scalability web server, it's a trial." + ls
 				+ "    author:xuhuiqing (tsingxu)" + ls
 				+ "---------------------------------------------------------------------";
-		logger.fatal(message);
+		logger.info(message);
 		System.out.println(message.substring(2));
+		logger.error("紧急事件，请联系110");
 	}
 }
