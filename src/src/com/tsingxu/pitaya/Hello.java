@@ -31,6 +31,6 @@ public class Hello
 				+ "---------------------------------------------------------------------" + ls;
 		logger.info(message);
 		System.out.println(message.substring(4));
-		logger.error("紧急事件，请联系110。记住请拨110!");
+//		logger.error("紧急事件，请联系110。记住请拨110!");
 	}
 }
