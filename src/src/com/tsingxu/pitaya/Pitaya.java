@@ -19,8 +19,10 @@ public class Pitaya
 
 		int reactorSize = Runtime.getRuntime().availableProcessors();
 
-		ExecutorService service = Executors.newCachedThreadPool();
+		ExecutorService service = Executors.newFixedThreadPool(reactorSize);
 		NIOReactor reactor;
+
+		reactor = new NIOReactor();
 
 		for (int i = 0; i < reactorSize; i++)
 		{

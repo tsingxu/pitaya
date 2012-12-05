@@ -7,7 +7,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -17,6 +16,7 @@ public class NIOReactor implements Runnable
 {
 	private Selector selector;
 	private static final Logger logger = Logger.getLogger(NIOReactor.class);
+	private static int BUFF_SIZE = 10240;
 
 	public NIOReactor()
 	{
@@ -31,13 +31,22 @@ public class NIOReactor implements Runnable
 		}
 	}
 
+	class handler
+	{
+		public void process(ByteBuffer buff)
+		{
+		}
+	}
+
 	public void register(SocketChannel sc) throws ClosedChannelException
 	{
 		if (selector == null)
 		{
 			return;
 		}
-		sc.register(selector, SelectionKey.OP_READ);
+
+		sc.register(selector, SelectionKey.OP_READ, new handler());
+		selector.wakeup();
 	}
 
 	@Override
@@ -49,25 +58,33 @@ public class NIOReactor implements Runnable
 		}
 
 		SelectionKey key;
-		ByteBuffer buff = ByteBuffer.allocate(10240);
+		ByteBuffer buff = ByteBuffer.allocate(BUFF_SIZE);
+		int count;
+		int idleTime = 0;
 		while (true)
 		{
 			try
 			{
-				selector.select(2000);
-				Set<SelectionKey> selectedKeys = selector.selectedKeys();
+				count = selector.select(600L);
 
-				if (selectedKeys.isEmpty())
+				if (count <= 0 && idleTime >= 5)
 				{
-					for (Iterator<SelectionKey> ite = selector.keys().iterator(); ite.hasNext();)
+					idleTime = 0;
+					for (Object obj : selector.keys().toArray())
 					{
-						key = ite.next();
+						key = (SelectionKey) obj;
 						SocketChannel sc = (SocketChannel) key.channel();
+
+						if (!key.isValid())
+						{
+							key.cancel();
+							continue;
+						}
 
 						try
 						{
 							buff.clear();
-							buff.put("heartbeat\n\r".getBytes());
+							buff.put("heartbeat".getBytes());
 							buff.flip();
 							respond(sc, buff);
 						}
@@ -80,12 +97,25 @@ public class NIOReactor implements Runnable
 						}
 					}
 				}
+				else if (count <= 0 && idleTime < 5)
+				{
+					idleTime++;
+				}
 				else
 				{
-					for (Iterator<SelectionKey> ite = selectedKeys.iterator(); ite.hasNext();)
+					idleTime = 0;
+					for (Iterator<SelectionKey> ite = selector.selectedKeys().iterator(); ite
+							.hasNext();)
 					{
 						key = ite.next();
+						handler han = (handler) key.attachment();
 						ite.remove();
+
+						if (!key.isValid())
+						{
+							key.cancel();
+							continue;
+						}
 
 						if (key.isReadable())
 						{
@@ -93,8 +123,7 @@ public class NIOReactor implements Runnable
 							try
 							{
 								readData(sc, buff);
-								buff.put("\n".getBytes());
-								buff.flip();
+								han.process(buff);
 								respond(sc, buff);
 							}
 							catch (IOException e)
@@ -108,11 +137,10 @@ public class NIOReactor implements Runnable
 					}
 				}
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
 				logger.error("select fail", e);
 			}
-
 		}
 
 	}
@@ -120,7 +148,11 @@ public class NIOReactor implements Runnable
 	private void readData(SocketChannel sc, ByteBuffer buff) throws IOException
 	{
 		buff.clear();
-		sc.read(buff);
+		if (sc.read(buff) == -1)
+		{
+			throw new IOException("read -1");
+		}
+		buff.flip();
 	}
 
 	private void closeChannel(SocketChannel sc)

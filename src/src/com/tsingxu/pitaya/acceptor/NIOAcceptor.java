@@ -37,7 +37,6 @@ public class NIOAcceptor implements Runnable
 		{
 			listener = ServerSocketChannel.open();
 			selector = Selector.open();
-
 			listener.configureBlocking(false);
 
 			if (ip == null || ip.trim().equals(""))
@@ -74,43 +73,54 @@ public class NIOAcceptor implements Runnable
 		}
 
 		SelectionKey key;
+		int count;
 		while (true)
 		{
 			try
 			{
-				selector.select(3000);
-				Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
-				for (; ite.hasNext();)
+				count = selector.select(10);
+
+				if (count > 0)
 				{
-					key = ite.next();
-					ite.remove();
-
-					if (key.isAcceptable())
+					Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
+					while (ite.hasNext())
 					{
-						ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
-						SocketChannel client = ssc.accept();
-						client.configureBlocking(false);
+						key = ite.next();
+						ite.remove();
 
-						try
+						if (key.isAcceptable())
 						{
-							NIOReactor reactor = NIOReactorPool.getInstance().getReactorEvenly();
-							if (reactor != null)
+							ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
+							SocketChannel client = ssc.accept();
+							client.configureBlocking(false);
+							client.socket().setSoLinger(true, 0);
+							client.socket().setReuseAddress(true);// 重用地址
+							client.socket().setSoLinger(true, 0);// 设置断链的时候服务端强行关闭连接，立即释放TCP缓冲区数据
+							client.socket().setReceiveBufferSize(256 * 1024);// 将底层buffer开大一些
+							client.socket().setSendBufferSize(256 * 1024);
+
+							try
 							{
-								logger.info("receive new client "
-										+ client.socket().getInetAddress().getHostAddress() + ":"
-										+ client.socket().getPort());
-								reactor.register(client);
+								NIOReactor reactor = NIOReactorPool.getInstance()
+										.getReactorEvenly();
+								if (reactor != null)
+								{
+									logger.info("receive new client "
+											+ client.socket().getInetAddress().getHostAddress()
+											+ ":" + client.socket().getPort());
+									reactor.register(client);
+								}
+								else
+								{
+									client.close();
+								}
 							}
-							else
+							catch (ClosedChannelException e)
 							{
+								logger.error("client " + client.socket().getInetAddress()
+										+ " closed", e);
 								client.close();
 							}
-						}
-						catch (ClosedChannelException e)
-						{
-							logger.error("client " + client.socket().getInetAddress() + " closed",
-									e);
-							client.close();
 						}
 					}
 				}
