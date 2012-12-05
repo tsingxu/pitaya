@@ -2,7 +2,6 @@ package com.tsingxu.pitaya.acceptor;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -53,8 +52,6 @@ public class NIOAcceptor implements Runnable
 		catch (IOException e)
 		{
 			logger.error("listen on " + (ip != null ? ip : "") + " " + port + " fail ", e);
-			selector = null;
-			listener = null;
 			System.exit(-1);
 		}
 
@@ -90,6 +87,7 @@ public class NIOAcceptor implements Runnable
 
 						if (key.isAcceptable())
 						{
+							logger.fatal("1");
 							ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
 							SocketChannel client = ssc.accept();
 							client.configureBlocking(false);
@@ -99,28 +97,17 @@ public class NIOAcceptor implements Runnable
 							client.socket().setReceiveBufferSize(256 * 1024);// 将底层buffer开大一些
 							client.socket().setSendBufferSize(256 * 1024);
 
-							try
-							{
-								NIOReactor reactor = NIOReactorPool.getInstance()
-										.getReactorEvenly();
-								if (reactor != null)
-								{
-									logger.info("receive new client "
-											+ client.socket().getInetAddress().getHostAddress()
-											+ ":" + client.socket().getPort());
-									reactor.register(client);
-								}
-								else
-								{
-									client.close();
-								}
-							}
-							catch (ClosedChannelException e)
-							{
-								logger.error("client " + client.socket().getInetAddress()
-										+ " closed", e);
-								client.close();
-							}
+							client.register(selector, SelectionKey.OP_READ);
+							logger.fatal("receive new client "
+									+ client.socket().getInetAddress().getHostAddress() + ":"
+									+ client.socket().getPort());
+							logger.fatal("2");
+						}
+						else if (key.isReadable())
+						{
+							NIOReactor reactor = NIOReactorPool.getInstance().getReactorEvenly();
+							reactor.register((SocketChannel) key.channel());
+							key.cancel();
 						}
 					}
 				}

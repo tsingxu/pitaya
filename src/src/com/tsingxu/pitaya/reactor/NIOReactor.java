@@ -33,20 +33,26 @@ public class NIOReactor implements Runnable
 
 	class handler
 	{
+		byte[] buff_ = new byte[BUFF_SIZE];
+
 		public void process(ByteBuffer buff)
 		{
+			buff.get(buff_, 0, buff.limit());
+			buff.position(0);
+			System.out.print(new String(buff_, 0, buff.limit()));
 		}
 	}
 
 	public void register(SocketChannel sc) throws ClosedChannelException
 	{
+		logger.fatal("3");
 		if (selector == null)
 		{
 			return;
 		}
 
 		sc.register(selector, SelectionKey.OP_READ, new handler());
-		selector.wakeup();
+		logger.fatal("4");
 	}
 
 	@Override
@@ -66,7 +72,6 @@ public class NIOReactor implements Runnable
 			try
 			{
 				count = selector.select(600L);
-
 				if (count <= 0 && idleTime >= 5)
 				{
 					idleTime = 0;

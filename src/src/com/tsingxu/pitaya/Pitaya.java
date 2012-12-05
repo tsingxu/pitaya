@@ -1,8 +1,5 @@
 package com.tsingxu.pitaya;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import com.tsingxu.pitaya.acceptor.NIOAcceptor;
 import com.tsingxu.pitaya.reactor.NIOReactor;
 import com.tsingxu.pitaya.reactor.NIOReactorPool;
@@ -19,7 +16,6 @@ public class Pitaya
 
 		int reactorSize = Runtime.getRuntime().availableProcessors();
 
-		ExecutorService service = Executors.newFixedThreadPool(reactorSize);
 		NIOReactor reactor;
 
 		reactor = new NIOReactor();
@@ -28,9 +24,8 @@ public class Pitaya
 		{
 			reactor = new NIOReactor();
 			NIOReactorPool.getInstance().addReactor(reactor);
-			service.submit(reactor);
+			new Thread(reactor).start();
 		}
-		service.shutdown();
 
 		if (args.length == 1)
 		{
