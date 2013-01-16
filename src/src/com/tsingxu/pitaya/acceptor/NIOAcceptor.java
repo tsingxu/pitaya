@@ -6,7 +6,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
@@ -69,48 +68,29 @@ public class NIOAcceptor implements Runnable
 			return;
 		}
 
-		SelectionKey key;
-		int count;
 		while (true)
 		{
 			try
 			{
-				count = selector.select(10);
+				selector.select();
+				selector.selectedKeys().clear();
 
-				if (count > 0)
+				for (;;)
 				{
-					Iterator<SelectionKey> ite = selector.selectedKeys().iterator();
-					while (ite.hasNext())
+					SocketChannel acceptedSocket = listener.accept();
+					if (acceptedSocket == null)
 					{
-						key = ite.next();
-						ite.remove();
-
-						if (key.isAcceptable())
-						{
-							logger.fatal("1");
-							ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
-							SocketChannel client = ssc.accept();
-							client.configureBlocking(false);
-							client.socket().setSoLinger(true, 0);
-							client.socket().setReuseAddress(true);// 重用地址
-							client.socket().setSoLinger(true, 0);// 设置断链的时候服务端强行关闭连接，立即释放TCP缓冲区数据
-							client.socket().setReceiveBufferSize(256 * 1024);// 将底层buffer开大一些
-							client.socket().setSendBufferSize(256 * 1024);
-
-							client.register(selector, SelectionKey.OP_READ);
-							logger.fatal("receive new client "
-									+ client.socket().getInetAddress().getHostAddress() + ":"
-									+ client.socket().getPort());
-							logger.fatal("2");
-						}
-						else if (key.isReadable())
-						{
-							NIOReactor reactor = NIOReactorPool.getInstance().getReactorEvenly();
-							reactor.register((SocketChannel) key.channel());
-							key.cancel();
-						}
+						break;
 					}
+					acceptedSocket.configureBlocking(false);
+					acceptedSocket.socket().setSoLinger(true, 0);
+					acceptedSocket.socket().setReuseAddress(true);// 重用地址
+					NIOReactor reactor = NIOReactorPool.getInstance().getReactorEvenly();
+					System.err.println("start to register");
+					reactor.register(acceptedSocket);
+					System.err.println("register");
 				}
+
 			}
 			catch (IOException e)
 			{
