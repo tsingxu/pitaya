@@ -33,18 +33,6 @@ public class NIOReactor implements Runnable
 		q.clear();
 	}
 
-	class handler
-	{
-		byte[] buff_ = new byte[BUFF_SIZE];
-
-		public void process(ByteBuffer buff)
-		{
-			buff.get(buff_, 0, buff.limit());
-			buff.position(0);
-			System.out.print(new String(buff_, 0, buff.limit()));
-		}
-	}
-
 	public void register(SocketChannel sc) throws ClosedChannelException
 	{
 		if (selector == null)
@@ -91,6 +79,7 @@ public class NIOReactor implements Runnable
 					{
 						System.err.println("disconnect with "
 								+ sc.socket().getRemoteSocketAddress());
+						logger.error("I/O error", e);
 						key.cancel();
 						sc.close();
 					}

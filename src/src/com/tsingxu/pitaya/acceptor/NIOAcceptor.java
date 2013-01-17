@@ -57,7 +57,6 @@ public class NIOAcceptor implements Runnable
 		String msg = "listen on " + SocketInfo.getRemoteAddressAndPort(listener.socket())
 				+ " succeed ";
 		logger.info(msg);
-		System.out.println(msg);
 	}
 
 	@Override
@@ -86,9 +85,7 @@ public class NIOAcceptor implements Runnable
 					acceptedSocket.socket().setSoLinger(true, 0);
 					acceptedSocket.socket().setReuseAddress(true);// 重用地址
 					NIOReactor reactor = NIOReactorPool.getInstance().getReactorEvenly();
-					System.err.println("start to register");
 					reactor.register(acceptedSocket);
-					System.err.println("register");
 				}
 
 			}
