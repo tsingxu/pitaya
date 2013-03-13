@@ -9,7 +9,6 @@ import java.nio.channels.SocketChannel;
 
 import org.apache.log4j.Logger;
 
-import com.tsingxu.pitaya.reactor.NIOReactor;
 import com.tsingxu.pitaya.reactor.NIOReactorPool;
 import com.tsingxu.pitaya.util.SocketInfo;
 
@@ -67,7 +66,7 @@ public class NIOAcceptor implements Runnable
 			return;
 		}
 
-		while (true)
+		for (;;)
 		{
 			try
 			{
@@ -81,11 +80,8 @@ public class NIOAcceptor implements Runnable
 					{
 						break;
 					}
-					acceptedSocket.configureBlocking(false);
-					acceptedSocket.socket().setSoLinger(true, 0);
-					acceptedSocket.socket().setReuseAddress(true);// 重用地址
-					NIOReactor reactor = NIOReactorPool.getInstance().getReactorEvenly();
-					reactor.register(acceptedSocket);
+
+					NIOReactorPool.getInstance().getReactorEvenly().register(acceptedSocket);
 				}
 
 			}

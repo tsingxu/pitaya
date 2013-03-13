@@ -53,14 +53,14 @@ public class NIOReactor implements Runnable
 
 		SelectionKey key;
 		ByteBuffer buff = ByteBuffer.allocate(BUFF_SIZE);
-		while (true)
+		for (;;)
 		{
 			try
 			{
 				selector.select(600L);
 
 				process();
-
+				
 				for (Iterator<SelectionKey> ite = selector.selectedKeys().iterator(); ite.hasNext();)
 				{
 					key = ite.next();
@@ -103,9 +103,12 @@ public class NIOReactor implements Runnable
 			{
 				try
 				{
+					sc.configureBlocking(false);
+					sc.socket().setSoLinger(true, 0);
+					sc.socket().setReuseAddress(true);// 重用地址
 					sc.register(selector, SelectionKey.OP_READ);
 				}
-				catch (ClosedChannelException e)
+				catch (IOException e)
 				{
 					System.err.println("disconnect with " + sc.socket().getRemoteSocketAddress());
 					try

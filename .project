@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>pitaya</name>
-	<comment></comment>
-	<projects>
-	</projects>
+	<comment>no comment</comment>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
@@ -12,6 +10,7 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
 </projectDescription>

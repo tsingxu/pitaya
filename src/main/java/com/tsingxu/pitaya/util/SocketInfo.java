@@ -3,7 +3,7 @@ package com.tsingxu.pitaya.util;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class SocketInfo
+public final class SocketInfo
 {
 	public static String getRemoteAddressAndPort(Socket socket)
 	{
