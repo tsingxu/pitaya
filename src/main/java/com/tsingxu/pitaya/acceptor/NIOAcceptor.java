@@ -12,81 +12,76 @@ import org.apache.log4j.Logger;
 import com.tsingxu.pitaya.reactor.NIOReactorPool;
 import com.tsingxu.pitaya.util.SocketInfo;
 
-public class NIOAcceptor implements Runnable
-{
+/**
+ * <b>the acceptor for nio</b>
+ * 
+ * <ol>
+ * <li>...</li>
+ * </ol>
+ * 
+ * @since Mar 13, 2013 3:07:04 PM
+ * @author xuhuiqing
+ */
+public class NIOAcceptor implements Runnable {
 	private Selector selector;
 	private ServerSocketChannel listener;
 	private static final Logger logger = Logger.getLogger(NIOAcceptor.class);
 
-	public NIOAcceptor(int port)
-	{
+	public NIOAcceptor(int port) {
 		this(port, null);
 	}
 
-	public NIOAcceptor()
-	{
+	public NIOAcceptor() {
 		this(8080);
 	}
 
-	public NIOAcceptor(int port, String ip)
-	{
-		try
-		{
+	public NIOAcceptor(int port, String ip) {
+		try {
 			listener = ServerSocketChannel.open();
 			selector = Selector.open();
 			listener.configureBlocking(false);
 
-			if (ip == null || ip.trim().equals(""))
-			{
+			if (ip == null || ip.trim().equals("")) {
 				listener.socket().bind(new InetSocketAddress(port));
-			}
-			else
-			{
+			} else {
 				listener.socket().bind(new InetSocketAddress(ip, port));
 			}
 
 			listener.register(selector, SelectionKey.OP_ACCEPT);
-		}
-		catch (IOException e)
-		{
-			logger.error("listen on " + (ip != null ? ip : "") + " " + port + " fail ", e);
+		} catch (IOException e) {
+			logger.error("listen on " + (ip != null ? ip : "") + " " + port
+					+ " fail ", e);
 			System.exit(-1);
 		}
 
-		String msg = "listen on " + SocketInfo.getRemoteAddressAndPort(listener.socket())
+		String msg = "listen on "
+				+ SocketInfo.getRemoteAddressAndPort(listener.socket())
 				+ " succeed ";
 		logger.info(msg);
 	}
 
 	@Override
-	public void run()
-	{
-		if (selector == null || listener == null)
-		{
+	public void run() {
+		if (selector == null || listener == null) {
 			return;
 		}
 
-		for (;;)
-		{
-			try
-			{
+		for (;;) {
+			try {
 				selector.select();
 				selector.selectedKeys().clear();
 
-				for (;;)
-				{
+				for (;;) {
 					SocketChannel acceptedSocket = listener.accept();
-					if (acceptedSocket == null)
-					{
+					if (acceptedSocket == null) {
 						break;
 					}
 
-					NIOReactorPool.getInstance().getReactorEvenly().register(acceptedSocket);
+					NIOReactorPool.getInstance().getReactorEvenly()
+							.register(acceptedSocket);
 				}
 
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 				logger.error("select fail", e);
 			}
 		}

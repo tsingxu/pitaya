@@ -1,41 +1,41 @@
 package com.tsingxu.pitaya.reactor;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class NIOReactorPool
-{
-	private ArrayList<NIOReactor> reactors = new ArrayList<NIOReactor>();
-
+/**
+ * <b>the reactor pool</b>
+ * 
+ * <ol>
+ * <li>...</li>
+ * </ol>
+ * 
+ * @since Mar 13, 2013 3:07:48 PM
+ * @author xuhuiqing
+ */
+public final class NIOReactorPool {
+	private final ArrayList<NIOReactor> reactors = new ArrayList<NIOReactor>();
 	private static final NIOReactorPool instance = new NIOReactorPool();
+	private final AtomicInteger index = new AtomicInteger(0);
 
-	private NIOReactorPool()
-	{
+	private NIOReactorPool() {
 		reactors.clear();
 	}
 
-	public static NIOReactorPool getInstance()
-	{
+	public static NIOReactorPool getInstance() {
 		return instance;
 	}
 
-	public void addReactor(NIOReactor reactor)
-	{
-		if (reactor == null)
-		{
+	public void addReactor(NIOReactor reactor) {
+		if (reactor == null) {
 			return;
 		}
-		synchronized (reactors)
-		{
+		synchronized (reactors) {
 			reactors.add(reactor);
 		}
 	}
 
-	public NIOReactor getReactorEvenly()
-	{
-		synchronized (reactors)
-		{
-			int selected = (int) (Math.random() * reactors.size());
-			return reactors.get(selected);
-		}
+	public NIOReactor getReactorEvenly() {
+		return reactors.get(index.incrementAndGet() % reactors.size());
 	}
 }
