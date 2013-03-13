@@ -1,2 +1,5 @@
 *.class
 /logs
+/target
+.project
+.classpath
